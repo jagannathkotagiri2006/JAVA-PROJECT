@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Hotel Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Keeping your existing CSS styles -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; margin: 0; overflow-x: hidden; }
+        .bg-hotel { background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4)), url('https://images.unsplash.com/photo-1542314831-c53cd3816002?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .glass-dark { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-down { animation: fadeInDown 0.8s ease-out forwards; }
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: flex; }
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 50; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; animation: slideIn 0.3s forwards; }
+        .toast.success { background-color: #10b981; } .toast.error { background-color: #ef4444; } .toast.info { background-color: #3b82f6; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <!-- START PAGE -->
+    <div id="screen-start" class="screen active bg-hotel flex-col items-center justify-center text-white">
+        <div class="text-center mb-16 animate-fade-in-down">
+            <i class="fas fa-crown text-6xl mb-6 text-yellow-400 drop-shadow-lg"></i>
+            <h1 class="text-6xl font-extrabold mb-4 tracking-tighter drop-shadow-xl font-serif">BYTE STAY</h1>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-8 w-full max-w-4xl px-6">
+            <button onclick="nav('screen-customer-login')" class="flex-1 glass text-white p-10 rounded-2xl shadow-2xl hover:bg-white/20 transition duration-300">
+                <i class="fas fa-key text-5xl mb-6 text-yellow-400"></i>
+                <h2 class="text-3xl font-bold mb-3 font-serif">Guest Portal</h2>
+            </button>
+            <button onclick="nav('screen-worker-login')" class="flex-1 glass-dark text-white p-10 rounded-2xl shadow-2xl hover:bg-slate-900/80 transition duration-300">
+                <i class="fas fa-concierge-bell text-5xl mb-6 text-blue-400"></i>
+                <h2 class="text-3xl font-bold mb-3 font-serif">Staff Portal</h2>
+            </button>
+        </div>
+    </div>
+
+    <!-- CUSTOMER LOGIN -->
+    <div id="screen-customer-login" class="screen bg-hotel flex-col items-center justify-center">
+        <div class="glass p-10 rounded-2xl shadow-2xl w-full max-w-md relative text-white">
+            <button onclick="nav('screen-start')" class="absolute top-6 left-6 text-gray-300 hover:text-white"><i class="fas fa-arrow-left text-xl"></i></button>
+            <h2 class="text-4xl font-bold font-serif text-center mb-8">Welcome</h2>
+            <form id="customer-login-form" onsubmit="handleCustomerLoginPhase1(event)">
+                <div id="customer-step-1">
+                    <div class="mb-5">
+                        <label class="block text-gray-200 text-sm font-semibold mb-2" for="guest-name">FULL NAME</label>
+                        <input class="w-full bg-white/10 border border-white/20 rounded-lg py-3 px-4 text-white" id="guest-name" type="text" required minlength="3">
+                    </div>
+                    <div class="mb-8">
+                        <label class="block text-gray-200 text-sm font-semibold mb-2" for="guest-phone">MOBILE NUMBER</label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-3 bg-white/10 border border-r-0 border-white/20 rounded-l-lg text-gray-300">+91</span>
+                            <input class="w-full bg-white/10 border border-white/20 rounded-r-lg py-3 px-4 text-white" id="guest-phone" type="tel" required pattern="[0-9]{10}">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-3 px-4 rounded-lg">Send OTP</button>
+                </div>
+                
+                <div id="customer-step-2" class="hidden">
+                    <div class="mb-8">
+                        <label class="block text-gray-200 text-sm font-semibold mb-2 text-center" for="guest-otp">ENTER VERIFICATION CODE</label>
+                        <p class="text-xs text-gray-300 text-center mb-4">OTP: <b>1234</b></p>
+                        <input class="w-full bg-white/10 border border-white/20 rounded-lg py-3 px-4 text-white text-center tracking-[1em] text-2xl" id="guest-otp" type="text" maxlength="4">
+                    </div>
+                    <button type="button" onclick="handleCustomerLoginPhase2()" class="w-full bg-yellow-500 text-slate-900 font-bold py-3 px-4 rounded-lg">Verify & Enter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- WORKER LOGIN -->
+    <div id="screen-worker-login" class="screen bg-hotel flex-col items-center justify-center">
+        <div class="glass-dark p-10 rounded-2xl shadow-2xl w-full max-w-md relative text-white">
+            <button onclick="nav('screen-start')" class="absolute top-6 left-6 text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-xl"></i></button>
+            <h2 class="text-3xl font-bold font-serif text-center mb-8 mt-4"><i class="fas fa-shield-alt text-blue-400 mb-3 block text-4xl"></i>Staff Portal</h2>
+            <form onsubmit="handleWorkerLogin(event)">
+                <div class="mb-5">
+                    <label class="block text-gray-300 text-sm font-semibold mb-2" for="worker-id">EMPLOYEE ID</label>
+                    <input class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-3 px-4 text-white" id="worker-id" type="text" required>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-gray-300 text-sm font-semibold mb-2" for="worker-pass">PASSWORD</label>
+                    <input class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-3 px-4 text-white" id="worker-pass" type="password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg">Authenticate</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOMER DASHBOARD -->
+    <div id="screen-customer-dashboard" class="screen flex-col bg-gray-50">
+        <nav class="bg-white shadow-md px-8 py-5 flex justify-between items-center border-b-4 border-yellow-500">
+            <div class="flex items-center gap-3"><i class="fas fa-crown text-yellow-500 text-3xl"></i><span class="font-serif font-bold text-2xl text-slate-900">THE LUXE</span></div>
+            <div class="flex items-center gap-6">
+                <span id="cust-welcome-msg" class="text-slate-700 font-medium hidden sm:block"></span>
+                <button onclick="logout()" class="text-red-500 border border-red-200 px-5 py-2 rounded-lg font-medium">Sign Out</button>
+            </div>
+        </nav>
+        
+        <!-- Search -->
+        <div class="bg-white p-6 rounded-xl shadow-md max-w-6xl mx-auto w-full mt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Find Your Perfect Room</h2>
+            <form onsubmit="handleSearchRooms(event)" class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Check-in Date & Time</label>
+                    <input type="datetime-local" id="search-date" required class="border rounded w-full py-2 px-3">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Duration (Nights)</label>
+                    <input type="number" id="search-duration" min="1" value="1" required class="border rounded w-full py-2 px-3">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Room Type</label>
+                    <select id="search-category" class="border rounded w-full py-2 px-3">
+                        <option value="Any">Any Type</option>
+                        <option value="Single">Single</option>
+                        <option value="Double">Double</option>
+                        <option value="Deluxe">Deluxe</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded h-[42px]">Search</button>
+            </form>
+        </div>
+
+        <div class="p-6 max-w-6xl mx-auto w-full flex-grow mt-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="search-results-title">Available Rooms</h2>
+            <div id="customer-rooms-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Customer rooms injected here via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- WORKER DASHBOARD -->
+    <div id="screen-worker-dashboard" class="screen flex-col bg-gray-50">
+        <nav class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2"><i class="fas fa-concierge-bell text-blue-400 text-2xl"></i><span class="font-bold text-xl">Staff Portal</span></div>
+            <button onclick="logout()" class="bg-slate-800 px-4 py-2 rounded">Logout</button>
+        </nav>
+
+        <div class="p-6 max-w-7xl mx-auto w-full flex-grow flex flex-col lg:flex-row gap-6">
+            <!-- Add Room Form -->
+            <div class="lg:w-1/3 flex flex-col gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Add New Room</h2>
+                    <form onsubmit="handleAddRoom(event)">
+                        <div class="mb-3"><label class="block text-gray-700 text-sm font-bold mb-1">Room Number</label><input type="text" id="add-room-num" required class="border rounded w-full py-2 px-3"></div>
+                        <div class="mb-3">
+                            <label class="block text-gray-700 text-sm font-bold mb-1">Category</label>
+                            <select id="add-room-cat" class="border rounded w-full py-2 px-3"><option>Single</option><option>Double</option><option>Deluxe</option></select>
+                        </div>
+                        <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-1">Price per Night ($)</label><input type="number" id="add-room-price" required min="10" class="border rounded w-full py-2 px-3"></div>
+                        <button type="submit" class="w-full bg-slate-800 text-white font-bold py-2 px-4 rounded">Add Room</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rooms Table -->
+            <div class="lg:w-2/3 bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Room Management</h2>
+                <button onclick="fetchRoomsFromTomcat()" class="mb-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"><i class="fas fa-sync-alt mr-2"></i>Refresh from Database</button>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                            <tr>
+                                <th class="py-3 px-6 text-left">Room #</th>
+                                <th class="py-3 px-6 text-left">Category</th>
+                                <th class="py-3 px-6 text-center">Price</th>
+                                <th class="py-3 px-6 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="worker-rooms-tbody" class="text-gray-600 text-sm font-light">
+                            <!-- Worker rooms injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STANDARD JAVASCRIPT CONNECTING TO TOMCAT -->
+    <script>
+        let currentUser = null;
+        let roomsData = []; // Local array to hold the data fetched from Tomcat
+        let currentSearch = null; 
+
+        // 1. Navigation & UI Helpers
+        const screens = ['screen-start', 'screen-customer-login', 'screen-worker-login', 'screen-customer-dashboard', 'screen-worker-dashboard'];
+        window.nav = (screenId) => {
+            screens.forEach(s => document.getElementById(s).classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'screen-worker-dashboard' || screenId === 'screen-customer-dashboard') {
+                fetchRoomsFromTomcat(); // Fetch fresh data whenever a dashboard opens
+            }
+        };
+
+        window.showToast = (msg, type = 'info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`; toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+
+        window.logout = () => {
+            currentUser = null;
+            nav('screen-start');
+            showToast("Logged out successfully", "success");
+        };
+
+        // 2. Fetch Data from Tomcat Server (GET Request)
+        window.fetchRoomsFromTomcat = async () => {
+            try {
+                // This targets the exact URL mapped in your RoomServlet.java
+                const response = await fetch('http://localhost:8080/api/rooms', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    roomsData = await response.json(); // Parse the JSON from your Java code
+                    renderWorkerRooms();
+                    if(currentSearch) renderCustomerRooms();
+                } else {
+                    showToast("Failed to load rooms from server.", "error");
+                }
+            } catch (error) {
+                console.error("Connection Error:", error);
+                showToast("Cannot connect to Java backend. Is Tomcat running?", "error");
+            }
+        };
+
+        // 3. Send Data to Tomcat Server (POST Request)
+        window.handleAddRoom = async (e) => {
+            e.preventDefault();
+            
+            const newRoom = {
+                number: document.getElementById('add-room-num').value,
+                category: document.getElementById('add-room-cat').value,
+                price: parseFloat(document.getElementById('add-room-price').value),
+                status: 'Available'
+            };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/rooms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRoom)
+                });
+
+                if (response.ok) {
+                    showToast("Room added successfully to Database!", "success");
+                    e.target.reset();
+                    fetchRoomsFromTomcat(); // Refresh the table
+                } else {
+                    showToast("Error saving room in backend.", "error");
+                }
+            } catch (error) {
+                console.error("Connection Error:", error);
+                showToast("Backend connection failed.", "error");
+            }
+        };
+
+        // --- Mock Login Logic (Keep this simple until you create a LoginServlet) ---
+        window.handleCustomerLoginPhase1 = (e) => {
+            e.preventDefault();
+            document.getElementById('customer-step-1').classList.add('hidden');
+            document.getElementById('customer-step-2').classList.remove('hidden');
+        };
+
+        window.handleCustomerLoginPhase2 = () => {
+            const otp = document.getElementById('guest-otp').value;
+            if(otp !== '1234') return showToast("Invalid Code.", "error");
+            const name = document.getElementById('guest-name').value;
+            currentUser = { role: 'customer', name };
+            document.getElementById('cust-welcome-msg').textContent = `Welcome, ${name}`;
+            nav('screen-customer-dashboard');
+        };
+
+        window.handleWorkerLogin = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('worker-id').value;
+            const pass = document.getElementById('worker-pass').value;
+            if (id === 'manager' && pass === 'admin123') {
+                currentUser = { role: 'worker' };
+                nav('screen-worker-dashboard');
+            } else {
+                showToast("Invalid credentials (use manager / admin123).", "error");
+            }
+        };
+
+        // --- Render UI Functions ---
+        function renderWorkerRooms() {
+            const tbody = document.getElementById('worker-rooms-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            roomsData.forEach(room => {
+                const statusBadge = room.status === 'Available' ? '<span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold">Available</span>' : '<span class="bg-red-100 text-red-700 py-1 px-3 rounded-full text-xs font-bold">Booked</span>';
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-6 text-left font-medium">${room.number}</td>
+                        <td class="py-3 px-6 text-left"><span class="bg-gray-200 py-1 px-2 rounded text-xs">${room.category}</span></td>
+                        <td class="py-3 px-6 text-center">$${room.price}</td>
+                        <td class="py-3 px-6 text-center">${statusBadge}</td>
+                    </tr>`;
+            });
+        }
+
+        window.handleSearchRooms = (e) => {
+            e.preventDefault();
+            currentSearch = { category: document.getElementById('search-category').value };
+            renderCustomerRooms();
+        };
+
+        function renderCustomerRooms() {
+            const container = document.getElementById('customer-rooms-container');
+            if(!container || !currentSearch) return;
+            container.innerHTML = '';
+            
+            let availRooms = roomsData.filter(r => r.status === 'Available');
+            if (currentSearch.category !== 'Any') availRooms = availRooms.filter(r => r.category === currentSearch.category);
+            
+            if (availRooms.length === 0) {
+                container.innerHTML = '<div class="col-span-full p-8 text-center bg-white rounded-xl shadow-sm border">No rooms available matching criteria.</div>';
+            } else {
+                availRooms.forEach(room => {
+                    container.innerHTML += `
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Room ${room.number}</h3>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold mb-4 inline-block">${room.category}</span>
+                            <div class="text-2xl font-bold text-gray-800 mb-4">$${room.price} <span class="text-gray-500 text-sm font-normal">/ night</span></div>
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="showToast('Booking endpoint needed in Java!', 'info')">Book Room</button>
+                        </div>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
